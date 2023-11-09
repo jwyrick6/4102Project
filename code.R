@@ -1,0 +1,13 @@
+# loding the Library 
+#install.packages("tidyverse")
+library(tidyverse)
+library(dslabs)
+library(dplyr)
+library(caret)
+library(lubridate)
+library(tidytext)
+library("RColorBrewer")
+library(randomForest)
+library(tictoc)
+library(e1071)
+library(ggpubr)
