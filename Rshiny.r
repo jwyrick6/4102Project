@@ -38,4 +38,45 @@ ui <- fluidPage(
       selectInput("stSlope", "ST Slope", choices = c("Up", "Flat", "Down")),
       actionButton("predict", "Predict")
     ),
+    mainPanel(
+      # Display prediction and visualizations
+      h3(textOutput("prediction")),
+      plotOutput("visualization")
+    )
+  )
+)
+
+server <- function(input, output) {
+  observeEvent(input$predict, {
+    # Extract input values and create new data
+    new_data <- data.frame(
+      Age = as.numeric(input$age),
+      Sex = as.factor(as.character(input$sex)),
+      ChestPainType = as.factor(as.character(input$chestPainType)),
+      RestingBP = as.numeric(input$restingBP),
+      Cholesterol = as.numeric(input$cholesterol),
+      FastingBS = as.numeric(input$fastingBS),
+      RestingECG = as.factor(as.character(input$restingECG)),
+      MaxHR = as.numeric(input$maxHR),
+      ExerciseAngina = as.factor(as.character(input$exerciseAngina)),
+      Oldpeak = as.numeric(input$oldpeak),
+      ST_Slope = as.factor(as.character(input$stSlope))
+    )
+    
+    # Set the levels of the new data to match the training data
+    for(col in categorical_columns) {
+      levels(new_data[[col]]) <- levels(train_data[[col]])
+    }
+    
+    # Predict using the trained model
+    prediction <- predict(trained_model, new_data)
+    
+    # Display prediction
+    output$prediction <- renderText({
+      if (prediction == 1) {
+        "Prediction: Heart Disease Present"
+      } else {
+        "Prediction: No Heart Disease"
+      }
+    })
     
