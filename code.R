@@ -12,7 +12,7 @@ library(tictoc)
 library(e1071)
 library(ggpubr)
 # Read the data into R
-heart_data <- read.csv("C:/Users/4102/Desktop/TK123816 - R -Language - Smart Health Prediction/heart.csv")
+heart_data <- read.csv("./heart.csv")
 
 # Display the first few rows of the data for a quick overview
 head(heart_data)
@@ -71,3 +71,34 @@ heart_data %>% filter(HeartDisease == 1) %>% group_by(Age, ChestPainType) %>% su
   ylab("Count") + xlab("Age") + labs(fill = "HeartDisease") + 
   ggtitle("Age vs. Count (disease only) for various chest pain conditions") +
   scale_fill_manual(values=c("red", "blue", "green", "black"))
+
+
+####################################################
+# condition sex wise
+####################################################
+options(repr.plot.width = 20, repr.plot.height = 8) 
+
+heart_data %>% ggballoonplot(x = "Age", y = "Sex",
+                                     size = "Cholesterol", size.range = c(5, 30), fill = "HeartDisease",show.label = FALSE,
+                                     ggtheme = theme_bw()) +
+  scale_fill_viridis_c(option = "C") + 
+  theme(axis.text.x = element_text(angle = 90, size = 10)) +
+  ggtitle("Age vs. Sex Map") + labs(fill = "HeartDisease")
+
+options(repr.plot.width = 20, repr.plot.height = 8) 
+
+####################################################
+# condition sex wise
+####################################################
+library(ggpubr)
+library(ggplot2)
+library(viridis)
+
+# Assuming heart_data is already read into R
+heart_data %>%
+  ggballoonplot(x = "Age", y = "ChestPainType",
+                size = "Cholesterol", size.range = c(5, 30), fill = "Sex",show.label = FALSE,
+                ggtheme = theme_bw()) +
+  scale_fill_viridis_d(option = "C") + 
+  theme(axis.text.x = element_text(angle = 90, size = 10)) +
+  ggtitle("Age vs. Chest Pain Map") + labs(fill = "Sex")
