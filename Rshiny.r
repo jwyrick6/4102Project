@@ -114,3 +114,12 @@ server <- function(input, output) {
         geom_bar(width = 1) +
         coord_polar(theta = "y") +
         labs(title = "Pie chart of Sex")
+
+      # Combine the plots using the `gridExtra` package
+      library(gridExtra)
+      grid.arrange(p1, p2, p3, p4, p5,p6, ncol=2)
+    })
+  })
+}
+
+shinyApp(ui = ui, server = server)
