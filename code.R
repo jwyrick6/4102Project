@@ -94,7 +94,6 @@ library(ggpubr)
 library(ggplot2)
 library(viridis)
 
-# Assuming heart_data is already read into R
 heart_data %>%
   ggballoonplot(x = "Age", y = "ChestPainType",
                 size = "Cholesterol", size.range = c(5, 30), fill = "Sex",show.label = FALSE,
@@ -102,3 +101,30 @@ heart_data %>%
   scale_fill_viridis_d(option = "C") + 
   theme(axis.text.x = element_text(angle = 90, size = 10)) +
   ggtitle("Age vs. Chest Pain Map") + labs(fill = "Sex")
+
+##############################
+# Heart disease by age column Pie plot
+#############################
+library(ggplot2)
+
+# Summarize the counts for each level of heartdisease
+heartdisease_counts <- as.data.frame(table(heart_data$HeartDisease))
+heartdisease_counts
+
+# Plotting
+ggplot(heartdisease_counts, aes(x = "", y = Freq, fill = Var1)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar("y") +
+  labs(title = "Distribution of Heart Disease", fill = "Heart Disease Type")
+
+# Box plot 
+ggplot(heart_data, aes(x = as.factor(HeartDisease), y = Age)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Age by Heart Disease", x = "Heart Disease", y = "Age") +
+  theme_minimal()
+
+# violin plot 
+ggplot(heart_data, aes(x = as.factor(HeartDisease), y = Age)) +
+  geom_violin() +
+  labs(title = "Violin Plot of Age by Heart Disease", x = "Heart Disease", y = "Age") +
+  theme_minimal()
