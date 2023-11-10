@@ -102,6 +102,7 @@ heart_data %>%
   theme(axis.text.x = element_text(angle = 90, size = 10)) +
   ggtitle("Age vs. Chest Pain Map") + labs(fill = "Sex")
 
+<<<<<<< HEAD
 ##############################
 # Heart disease by age column Pie plot
 #############################
@@ -128,3 +129,32 @@ ggplot(heart_data, aes(x = as.factor(HeartDisease), y = Age)) +
   geom_violin() +
   labs(title = "Violin Plot of Age by Heart Disease", x = "Heart Disease", y = "Age") +
   theme_minimal()
+
+############################################
+# pie plot for the ChestPainType, Sex, RestingECG, ExerciseAngina, and ST_Slope column
+#############################################
+
+# Function to generate pie plot for a given column
+create_pie_plot <- function(data, column_name) {
+  counts <- as.data.frame(table(data[[column_name]]))
+  
+  ggplot(counts, aes(x = "", y = Freq, fill = Var1)) +
+    geom_bar(width = 1, stat = "identity") +
+    coord_polar("y") +
+    labs(title = paste0("Distribution of ", column_name), fill = column_name) +
+    theme_minimal()
+}
+
+# Create pie plots
+pie_ChestPainType <- create_pie_plot(heart_data, "ChestPainType")
+pie_Sex <- create_pie_plot(heart_data, "Sex")
+pie_RestingECG <- create_pie_plot(heart_data, "RestingECG")
+pie_ExerciseAngina <- create_pie_plot(heart_data, "ExerciseAngina")
+pie_ST_Slope <- create_pie_plot(heart_data, "ST_Slope")
+
+# Display one of the pie plots (for demonstration purposes, displaying the pie plot for "ChestPainType")
+print(pie_ChestPainType)
+print(pie_Sex)
+print(pie_RestingECG)
+print(pie_ExerciseAngina)
+print(pie_ST_Slope)
