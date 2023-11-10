@@ -79,4 +79,38 @@ server <- function(input, output) {
         "Prediction: No Heart Disease"
       }
     })
+
     
+    # Display visualization
+    output$visualization <- renderPlot({
+      # 1. Histogram of Age
+      p1 <- ggplot(heart_data, aes(x = Age)) +
+        geom_histogram(binwidth=5, fill="lightblue", color="black") +
+        labs(title = "Histogram of Age")
+      
+      # 2. Boxplot of Cholesterol by HeartDisease
+      p2 <- ggplot(heart_data, aes(x = as.factor(HeartDisease), y = Cholesterol)) +
+        geom_boxplot() +
+        labs(title = "Boxplot of Cholesterol by HeartDisease")
+      
+      # 3. Barplot of Chest Pain Type
+      p3 <- ggplot(heart_data, aes(x = ChestPainType)) +
+        geom_bar(fill="lightgreen") +
+        labs(title = "Barplot of Chest Pain Type")
+      
+      # 4. Density plot of Max Heart Rate
+      p4 <- ggplot(heart_data, aes(x = MaxHR)) +
+        geom_density(fill="lightpink") +
+        labs(title = "Density plot of Max Heart Rate")
+      
+      # 5. Scatter plot of Age vs. Max Heart Rate
+      p5 <- ggplot(heart_data, aes(x = Age, y = MaxHR)) +
+        geom_point() +
+        geom_point(data = new_data, aes(x = Age, y = MaxHR), color = "red") +
+        labs(title = "Scatter plot of Age vs. Max Heart Rate")
+      
+      # 6. Pie chart of Sex
+      p6 <- ggplot(heart_data, aes(x = "", fill = Sex)) +
+        geom_bar(width = 1) +
+        coord_polar(theta = "y") +
+        labs(title = "Pie chart of Sex")
