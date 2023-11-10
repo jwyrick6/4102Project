@@ -93,7 +93,6 @@ options(repr.plot.width = 20, repr.plot.height = 8)
 library(ggpubr)
 library(ggplot2)
 library(viridis)
-
 heart_data %>%
   ggballoonplot(x = "Age", y = "ChestPainType",
                 size = "Cholesterol", size.range = c(5, 30), fill = "Sex",show.label = FALSE,
@@ -101,7 +100,6 @@ heart_data %>%
   scale_fill_viridis_d(option = "C") + 
   theme(axis.text.x = element_text(angle = 90, size = 10)) +
   ggtitle("Age vs. Chest Pain Map") + labs(fill = "Sex")
-
 <<<<<<< HEAD
 ##############################
 # Heart disease by age column Pie plot
