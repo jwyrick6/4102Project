@@ -273,3 +273,57 @@ missing_plot <- ggplot(data = data.frame(Columns = names(missing_values), Missin
 
 # Display the plot for missing values
 missing_plot
+
+#########################################################################
+#########################################################################
+# Hierarchical clustering with dendrogram
+#########################################################################
+#########################################################################
+
+# Install necessary libraries
+install.packages('hclust')
+install.packages("dendextend", dependencies=TRUE)
+
+# Step 1: Load necessary libraries
+library(dplyr)
+library(dendextend)
+
+# Step 2: Read the data
+heart_data <- read.csv("./heart.csv")
+
+# Step 3: Convert categorical variables to factors
+heart_data[] <- lapply(heart_data, as.factor)
+
+# Step 4: Convert categorical variables to dummy variables (one-hot encoding)
+heart_data_encoded <- as.data.frame(model.matrix(~ . - 1, data = heart_data))
+
+# Step 5: Calculate the distance matrix
+dist_matrix <- dist(heart_data_encoded, method = "euclidean")
+
+# Step 6: Perform hierarchical clustering
+hc <- hclust(dist_matrix, method = "average")
+
+# Step 7: Plot the dendrogram
+dend <- as.dendrogram(hc)
+plot(dend)
+#########################################################################
+#########################################################################
+# preprocessing 
+#########################################################################
+#########################################################################
+
+# Step 1: Install and Load necessary libraries and data
+install.packages("dplyr")
+library(dplyr)
+
+# Step 2: Convert all columns to numeric using label encoding
+heart_data_numeric <- heart_data %>%
+  mutate(across(where(is.factor), as.numeric)) %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(where(is.factor), as.numeric))
+
+# Display the first few rows of the numeric data
+head(heart_data_numeric)
+
+##########################################################################
+##########################################################################
