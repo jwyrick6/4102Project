@@ -1,4 +1,3 @@
-# loding the Library 
 #install.packages("tidyverse")
 library(tidyverse)
 library(dslabs)
@@ -11,7 +10,8 @@ library(randomForest)
 library(tictoc)
 library(e1071)
 library(ggpubr)
-# Read the data into R
+
+# Read the data into R from the .csv file
 heart_data <- read.csv("./heart.csv")
 
 # Display the first few rows of the data for a quick overview
@@ -22,7 +22,6 @@ str(heart_data)
 
 # Display summary statistics
 summary(heart_data)
-
 
 # Check unique values for each column
 lapply(heart_data, unique)
@@ -158,3 +157,21 @@ print(pie_Sex)
 print(pie_RestingECG)
 print(pie_ExerciseAngina)
 print(pie_ST_Slope)
+
+################################
+# BOX Plot for Numerical Column
+################################
+
+# Filter out only the numeric columns
+numeric_data <- heart_data[sapply(heart_data, is.numeric)]
+
+# Create a long format for ggplot
+long_data <- reshape2::melt(numeric_data)
+
+# Create the boxplot
+ggplot(long_data, aes(x=variable, y=value, fill=variable)) +
+  geom_boxplot() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title="Boxplots for Numerical Columns", x="", y="Value") +
+  scale_fill_brewer(palette="Set3")
