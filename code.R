@@ -45,9 +45,7 @@ heart_data %>% summarise(n_age = n_distinct(Age), n_sex = n_distinct(Sex),
 
 
 ####################################################
-# Disease distribution for age. 
-# 0 - no disease
-# 1 - disease
+# Disease distribution for age. 0 no disease and 1 disease
 ####################################################
 
 heart_data %>% group_by(Age, HeartDisease) %>% summarise(count = n()) %>%
@@ -59,8 +57,7 @@ heart_data %>% group_by(Age, HeartDisease) %>% summarise(count = n()) %>%
 
 ####################################################
 # Chest pain type for diseased people
-# You can see - Majority as condition 3 type
-# 0: typical angina 1: atypical angina  Value 2: non-anginal pain Value 3: asymptomatic
+# 0: typical angina 1: atypical angina  Value 2: non-anginal pain Value 3: asymptomatic (Majority)
 ####################################################
 
 heart_data %>% filter(HeartDisease == 1) %>% group_by(Age, ChestPainType) %>% summarise(count = n()) %>%
@@ -175,3 +172,104 @@ ggplot(long_data, aes(x=variable, y=value, fill=variable)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(title="Boxplots for Numerical Columns", x="", y="Value") +
   scale_fill_brewer(palette="Set3")
+
+##########################################
+# Histogram to check the data distribution 
+##########################################
+library(gridExtra)
+
+# Create a list to store individual histograms and individual plots
+hist_list <- list()
+plot_list <- list()
+
+# Loop through each column and create a histogram or bar plot depending on the column type
+for (col_name in names(heart_data)) {
+  if (is.numeric(heart_data[[col_name]])) { # Check if the column is numeric
+    p <- ggplot(heart_data, aes_string(col_name)) +
+      geom_histogram(fill = "skyblue", color = "black", bins = 30) +
+      theme_minimal() +
+      labs(title = paste("Histogram of", col_name), x = col_name, y = "Count")
+  } else { # For non-numeric columns, create a bar plot
+    p <- ggplot(heart_data, aes_string(col_name)) +
+      geom_bar(fill = "salmon", color = "black") +
+      theme_minimal() +
+      labs(title = paste("Bar Plot of", col_name), x = col_name, y = "Count")
+  }
+  plot_list[[col_name]] <- p
+}
+
+# Arrange the plots in a grid layout
+do.call(gridExtra::grid.arrange, c(plot_list, ncol = 2))
+
+# Create a line plot for the Age column
+ggplot(heart_data, aes(x = 1:nrow(heart_data), y = Age)) +
+  geom_line(color = "blue") +
+  theme_minimal() +
+  labs(title = "Line Plot of Age", x = "Index", y = "Age")
+
+
+heart_data <- read.csv("./heart.csv")
+head(heart_data)
+
+# Convert the 'Sex' column to factor for better labeling (assuming 0 for female and 1 for male)
+#heart_data$Sex <- factor(heart_data$Sex, levels = c(0, 1), labels = c("Female", "Male"))
+
+# Calculate average age for each sex
+avg_age <- heart_data %>%
+  group_by(Sex) %>%
+  summarise(Average_Age = mean(Age, na.rm = TRUE))
+
+# Create a bar plot for Average Age across different Sex categories
+bar_plot <- ggplot(avg_age, aes(x = Sex, y = Average_Age, fill = Sex)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Average Age by Sex", x = "Sex", y = "Average Age")
+
+# Display the plot
+bar_plot
+
+# Convert all categorical columns (factors and characters) to numeric using factorization
+heart_data_numeric <- heart_data
+for (col_name in names(heart_data)) {
+  if (is.character(heart_data[[col_name]]) || is.factor(heart_data[[col_name]])) {
+    heart_data_numeric[[col_name]] <- as.numeric(as.factor(heart_data[[col_name]]))
+  }
+}
+
+# View the first few rows of the converted dataframe
+head(heart_data_numeric)
+
+# Install and load the corrplot package if not already done
+# install.packages("corrplot")
+library(corrplot)
+
+# Calculate the correlation matrix
+cor_matrix <- cor(heart_data_numeric, use = "complete.obs")  # 'complete.obs' ignores missing values
+
+# Plot the correlation matrix
+corrplot(cor_matrix, method = "circle")
+
+########################
+# Correlation plot 
+#######################
+
+#install.packages("GGally")
+library(GGally)
+
+# Create a pair plot using ggpairs and display it
+pair_plot <- ggpairs(heart_data_numeric)
+pair_plot
+
+# Calculate the number of missing values for each column
+missing_values <- colSums(is.na(heart_data))
+
+# Create a bar plot for missing values
+library(ggplot2)
+missing_plot <- ggplot(data = data.frame(Columns = names(missing_values), MissingCount = missing_values), aes(x = Columns, y = MissingCount)) +
+  geom_bar(stat = "identity", fill = "red") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Missing Values per Column", x = "Columns", y = "Number of Missing Values")
+
+# Display the plot for missing values
+missing_plot
