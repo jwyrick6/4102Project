@@ -397,3 +397,62 @@ anim_plot <- ggplot(data_with_clusters, aes(x = Age, y = Cholesterol)) +
 # Save the animated plot
 anim_save("animated_centroids.gif", anim_plot)
 getwd()  # to check the animated plot path 
+
+####################################################
+# elbow scree plot 
+#####################################################
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+
+# Convert all data to numeric
+heart_data_numeric <- heart_data %>%
+  mutate(across(where(is.factor), as.numeric)) %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(where(is.factor), as.numeric))
+
+# Normalize the data
+scaled_data <- scale(heart_data_numeric)
+
+# Compute total within-cluster sum of square
+wss <- numeric(15)
+for (k in 1:15) {
+  kmeans_result <- kmeans(scaled_data, centers = k)
+  wss[k] <- kmeans_result$tot.withinss
+}
+
+# Plot the elbow method scree plot
+elbow_plot <- ggplot(data.frame(k = 1:15, wss = wss), aes(x = k, y = wss)) +
+  geom_line() +
+  geom_point() +
+  labs(title = "Elbow Method Scree Plot for Heart Data", x = "Number of clusters (k)", y = "Total within-cluster sum of squares") +
+  theme_minimal()
+
+print(elbow_plot)
+
+################################################################
+# pie plot of the cluster 
+#################################################################
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+
+# Convert all data to numeric
+heart_data_numeric <- heart_data %>%
+  mutate(across(where(is.factor), as.numeric)) %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(where(is.factor), as.numeric))
+
+# Normalize the data
+scaled_data <- scale(heart_data_numeric)
+
+# K-means clustering with 4 clusters
+set.seed(123)
+kmeans_result <- kmeans(scaled_data, centers = 4)
+
+# Create a table of cluster assignments
+cluster_counts <- table(kmeans_result$cluster)
+
+# Plot a pie chart
+pie(cluster_counts, main="Distribution of Data Points Among 4 Clusters", col=rainbow(4), labels=paste(names(cluster_counts), "\n", cluster_counts, " points"))
+
