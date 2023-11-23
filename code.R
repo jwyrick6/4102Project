@@ -326,4 +326,74 @@ heart_data_numeric <- heart_data %>%
 head(heart_data_numeric)
 
 ##########################################################################
+# K-means clustering 
 ##########################################################################
+
+# Step 1: Preparation
+#library(dplyr)
+
+# Convert all data to numeric
+heart_data_numeric <- heart_data %>%
+  mutate(across(where(is.factor), as.numeric)) %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(where(is.factor), as.numeric))
+
+# Step 2: Normalization
+scaled_data <- scale(heart_data_numeric)
+
+# Step 3: K-means Clustering
+# assuming we want 3 clusters.
+set.seed(123)  # Setting seed for reproducibility
+kmeans_result <- kmeans(scaled_data, centers = 3)
+
+# Step 4: Inspect the Clusters
+# View cluster assignments
+print(kmeans_result$cluster)
+
+# View cluster centroids
+print(kmeans_result$centers)
+
+####################################################
+# plot the centroids 
+#####################################################
+
+# Install and load necessary libraries
+install.packages(c("dplyr", "ggplot2", "gganimate", "transformr"))
+library(dplyr)
+library(ggplot2)
+library(gganimate)
+library(transformr)
+
+# Convert all data to numeric
+heart_data_numeric <- heart_data %>%
+  mutate(across(where(is.factor), as.numeric)) %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(where(is.factor), as.numeric))
+
+# Normalize the data
+scaled_data <- scale(heart_data_numeric)
+
+# Implement k-means clustering
+set.seed(123)  # Setting seed for reproducibility
+kmeans_result <- kmeans(scaled_data, centers = 3)
+
+# Add cluster assignments to the data
+data_with_clusters <- as.data.frame(scaled_data)
+data_with_clusters$cluster <- as.factor(kmeans_result$cluster)
+
+# Extract cluster centroids
+centroids <- as.data.frame(kmeans_result$centers)
+centroids$cluster <- as.factor(1:nrow(centroids))
+
+# Create animated plot
+anim_plot <- ggplot(data_with_clusters, aes(x = Age, y = Cholesterol)) + 
+  geom_point(aes(color = cluster), alpha = 0.6) +
+  geom_point(data = centroids, aes(x = Age, y = Cholesterol, color = cluster), size = 5, shape = 8) +
+  labs(title = 'Animated Centroids of K-means Clusters', x = 'Age', y = 'Cholesterol') +
+  transition_states(cluster, transition_length = 2, state_length = 1) +
+  enter_fade() + 
+  exit_fade()
+
+# Save the animated plot
+anim_save("animated_centroids.gif", anim_plot)
+getwd()  # to check the animated plot path 
