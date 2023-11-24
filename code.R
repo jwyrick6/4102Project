@@ -456,3 +456,140 @@ cluster_counts <- table(kmeans_result$cluster)
 # Plot a pie chart
 pie(cluster_counts, main="Distribution of Data Points Among 4 Clusters", col=rainbow(4), labels=paste(names(cluster_counts), "\n", cluster_counts, " points"))
 
+#########################################################################
+#########################################################################
+# AI Classification Here
+# splitting the data into training and testing 
+#########################################################################
+#########################################################################
+
+# Load necessary libraries
+library(dplyr)
+
+# Step 2: Convert all data to numeric
+heart_data_numeric <- heart_data %>%
+  mutate(across(where(is.factor), as.numeric)) %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(where(is.factor), as.numeric))
+
+# Step 3: Split the data into training and testing sets
+set.seed(123)  # Setting seed for reproducibility
+
+sample_size <- floor(0.7 * nrow(heart_data_numeric))
+train_indices <- sample(seq_len(nrow(heart_data_numeric)), size = sample_size)
+
+train_data <- heart_data_numeric[train_indices, ]
+test_data <- heart_data_numeric[-train_indices, ]
+
+# Verifying the split
+cat("Number of rows in training data:", nrow(train_data), "\n")
+cat("Number of rows in testing data:", nrow(test_data), "\n")
+
+##########################################################################
+# Random Forest classifier 
+##########################################################################
+
+# Install necessary libraries, comment out when done
+install.packages(c("randomForest", "e1071", "pROC", "caret"))
+
+# load necessary libraries
+library(randomForest)
+library(e1071)
+library(pROC)
+library(caret)
+
+# Random Forest Model Training
+set.seed(123)
+rf_model <- randomForest(HeartDisease ~ ., data = train_data, ntree = 100)
+
+# Training and Testing Accuracy
+train_predictions <- predict(rf_model, train_data)
+train_accuracy <- sum(train_predictions == train_data$HeartDisease) / nrow(train_data)
+
+test_predictions <- predict(rf_model, test_data)
+test_accuracy <- sum(test_predictions == test_data$HeartDisease) / nrow(test_data)
+
+cat("Training accuracy:", train_accuracy, "\n")
+cat("Testing accuracy:", test_accuracy, "\n")
+
+# Confusion Matrix & Classification Report
+conf_matrix <- table(test_predictions, test_data$HeartDisease)
+print(conf_matrix)
+
+# ROC and AUC Plot
+roc_obj <- roc(test_data$HeartDisease, as.numeric(test_predictions))
+auc_obj <- auc(roc_obj)
+plot(roc_obj, main = paste("ROC Curve\nAUC:", round(auc_obj, 3)))
+
+# Visualize Confusion Matrix using caret
+confusionMatrixPlot(conf_matrix)
+
+##########################################################################
+##########################################################################
+# Random Forest classifier with model tuning 
+##########################################################################
+##########################################################################
+
+# Install and load necessary libraries, same as before
+#install.packages(c("randomForest", "e1071", "pROC", "caret","vcd"))
+library(randomForest)
+library(e1071)
+library(pROC)
+library(caret)
+library(vcd)  #confusion matrix library
+
+# Convert all data to numeric
+heart_data_numeric <- heart_data %>%
+  mutate(across(where(is.factor), as.numeric)) %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(where(is.factor), as.numeric))
+
+# Convert the HeartDisease column to a factor
+heart_data_numeric$HeartDisease <- as.factor(heart_data_numeric$HeartDisease)
+
+# Normalize the data
+scaled_data <- scale(heart_data_numeric)
+
+# Split the data into training and testing sets
+set.seed(123)  # Setting seed for reproducibility
+sample_size <- floor(0.7 * nrow(heart_data_numeric))
+train_indices <- sample(seq_len(nrow(heart_data_numeric)), size = sample_size)
+train_data <- heart_data_numeric[train_indices, ]
+test_data <- heart_data_numeric[-train_indices, ]
+
+# Hyperparameter Grid Setup
+tune_grid <- expand.grid(mtry = c(2, 3, 4, 5, 6, 7, 8, 9, 10))
+
+# Grid Search with Cross-Validation
+tuned_rf <- train(
+  HeartDisease ~ ., 
+  data = train_data, 
+  method = "rf", 
+  metric = "Accuracy", 
+  tuneGrid = tune_grid, 
+  trControl = trainControl(method = "cv", number = 5)
+)
+
+# Print the best hyperparameters
+print(tuned_rf$bestTune)
+
+# Evaluate Best Model's Performance
+best_rf_model <- randomForest(HeartDisease ~ ., data = train_data, mtry = tuned_rf$bestTune$mtry, ntree = 100)
+train_predictions <- predict(best_rf_model, train_data)
+test_predictions <- predict(best_rf_model, test_data)
+
+train_accuracy <- sum(train_predictions == train_data$HeartDisease) / nrow(train_data)
+test_accuracy <- sum(test_predictions == test_data$HeartDisease) / nrow(test_data)
+
+cat("Training accuracy with tuned parameters:", train_accuracy, "\n")
+cat("Testing accuracy with tuned parameters:", test_accuracy, "\n")
+
+# ROC Curve
+roc_obj <- roc(as.numeric(test_data$HeartDisease), as.numeric(test_predictions))
+plot(roc_obj, main = paste("ROC Curve for Tuned Random Forest Model"))
+
+# Confusion Matrix using caret
+conf_matrix <- table(test_predictions, test_data$HeartDisease)
+
+# Visualize the confusion matrix
+fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
