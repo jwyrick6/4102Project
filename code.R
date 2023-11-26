@@ -593,3 +593,100 @@ conf_matrix <- table(test_predictions, test_data$HeartDisease)
 
 # Visualize the confusion matrix
 fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
+
+
+##########################################################################
+##########################################################################
+# Decision tree classifier 
+##########################################################################
+##########################################################################
+# Install and load necessary libraries
+#install.packages(c("rpart", "rpart.plot", "e1071", "pROC"))
+library(rpart)
+library(rpart.plot)
+library(e1071)
+library(pROC)
+
+# Assuming the data has been loaded, converted to numeric, and split into train_data and test_data
+
+# Step 1: Decision Tree Model Training
+tree_model <- rpart(HeartDisease ~ ., data = train_data, method = "class")
+
+# Step 2: Training and Testing Accuracy
+train_predictions <- predict(tree_model, train_data, type = "class")
+train_accuracy <- sum(train_predictions == train_data$HeartDisease) / nrow(train_data)
+
+test_predictions <- predict(tree_model, test_data, type = "class")
+test_accuracy <- sum(test_predictions == test_data$HeartDisease) / nrow(test_data)
+
+cat("Training accuracy:", train_accuracy, "\n")
+cat("Testing accuracy:", test_accuracy, "\n")
+
+# Step 3: Confusion Matrix
+conf_matrix <- table(test_predictions, test_data$HeartDisease)
+print(conf_matrix)
+# Visualize the confusion matrix
+fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
+
+
+# Step 4: ROC Curve
+test_probabilities <- predict(tree_model, test_data, type = "prob")[,2]  # Probabilities of class 1
+roc_obj <- roc(test_data$HeartDisease, test_probabilities)
+plot(roc_obj, main = "ROC Curve for Decision Tree Model")
+
+##########################################################################
+##########################################################################
+# Decision tree classifier with model tuning 
+##########################################################################
+##########################################################################
+
+# Install and load necessary libraries
+#install.packages(c("rpart", "e1071", "pROC", "caret"))
+library(rpart)
+library(e1071)
+library(pROC)
+library(caret)
+
+# Assuming the data has been loaded, converted to numeric, and split into train_data and test_data
+
+# 1. Decision Tree Model Training with Hyperparameter Tuning
+# Hyperparameter Grid Setup
+tune_grid <- expand.grid(cp = seq(0.001, 0.05, by = 0.002))
+
+# Grid Search with Cross-Validation
+set.seed(123)
+tuned_tree <- train(
+  HeartDisease ~ ., 
+  data = train_data, 
+  method = "rpart", 
+  metric = "Accuracy", 
+  tuneGrid = tune_grid, 
+  trControl = trainControl(method = "cv", number = 5)
+)
+
+# Print the best hyperparameters
+print(tuned_tree$bestTune)
+
+# 2. Training and Testing Accuracy
+best_tree_model <- rpart(HeartDisease ~ ., data = train_data, method = "class", control = rpart.control(cp = tuned_tree$bestTune$cp))
+train_predictions <- predict(best_tree_model, train_data, type = "class")
+test_predictions <- predict(best_tree_model, test_data, type = "class")
+
+train_accuracy <- sum(train_predictions == train_data$HeartDisease) / nrow(train_data)
+test_accuracy <- sum(test_predictions == test_data$HeartDisease) / nrow(test_data)
+
+cat("Training accuracy with tuned parameters:", train_accuracy, "\n")
+cat("Testing accuracy with tuned parameters:", test_accuracy, "\n")
+
+# 3. Confusion Matrix
+conf_matrix <- table(test_predictions, test_data$HeartDisease)
+print(conf_matrix)
+
+# Visualize the confusion matrix
+fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
+
+
+# 4. ROC Curve
+test_probabilities <- predict(best_tree_model, test_data, type = "prob")[,2]  # Probabilities of class 1
+roc_obj <- roc(test_data$HeartDisease, test_probabilities)
+plot(roc_obj, main = "ROC Curve for Tuned Decision Tree Model")
