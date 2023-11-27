@@ -690,3 +690,93 @@ fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margi
 test_probabilities <- predict(best_tree_model, test_data, type = "prob")[,2]  # Probabilities of class 1
 roc_obj <- roc(test_data$HeartDisease, test_probabilities)
 plot(roc_obj, main = "ROC Curve for Tuned Decision Tree Model")
+
+##########################################################################
+##########################################################################
+# Logistic Regression 
+##########################################################################
+##########################################################################
+
+
+# Install and load necessary libraries
+#install.packages(c("e1071", "pROC", "caret"))
+library(e1071)
+library(pROC)
+library(caret)
+
+# Assuming the data has been loaded, converted to numeric, and split into train_data and test_data
+
+# 1. Logistic Regression Model Training
+logistic_model <- glm(HeartDisease ~ ., data = train_data, family = binomial())
+
+# 2. Training and Testing Accuracy
+train_probabilities <- predict(logistic_model, train_data, type = "response")
+train_predictions <- ifelse(train_probabilities > 0.5, 1, 0)
+train_accuracy <- sum(train_predictions == train_data$HeartDisease) / nrow(train_data)
+
+test_probabilities <- predict(logistic_model, test_data, type = "response")
+test_predictions <- ifelse(test_probabilities > 0.5, 1, 0)
+test_accuracy <- sum(test_predictions == test_data$HeartDisease) / nrow(test_data)
+
+cat("Training accuracy:", train_accuracy, "\n")
+cat("Testing accuracy:", test_accuracy, "\n")
+
+# 3. Confusion Matrix
+conf_matrix <- table(test_predictions, test_data$HeartDisease)
+print(conf_matrix)
+# Visualize the confusion matrix
+fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
+
+
+# 4. ROC Curve
+roc_obj <- roc(test_data$HeartDisease, test_probabilities)
+plot(roc_obj, main = "ROC Curve for Logistic Regression Model")
+
+##########################################################################
+##########################################################################
+# Logistic Regression with model tuning 
+##########################################################################
+##########################################################################
+
+# Install and load necessary libraries
+#install.packages(c("glmnet", "pROC", "caret"))
+library(glmnet)
+library(pROC)
+library(caret)
+
+# Assuming the data has been loaded, converted to numeric, and split into train_data and test_data
+
+# Convert data to matrix form (required by glmnet)
+x_train <- as.matrix(train_data[, -which(names(train_data) == "HeartDisease")])
+y_train <- train_data$HeartDisease
+x_test <- as.matrix(test_data[, -which(names(test_data) == "HeartDisease")])
+y_test <- test_data$HeartDisease
+
+# 1. Regularized Logistic Regression Model Training with Hyperparameter Tuning
+set.seed(123)
+cv_fit <- cv.glmnet(x_train, y_train, family = "binomial", alpha = 1)  # Lasso regularization (alpha=1)
+best_lambda <- cv_fit$lambda.min
+logistic_model <- glmnet(x_train, y_train, family = "binomial", alpha = 1, lambda = best_lambda)
+
+# 2. Training and Testing Accuracy
+train_probabilities <- predict(logistic_model, s = best_lambda, newx = x_train, type = "response")
+train_predictions <- ifelse(train_probabilities > 0.5, 1, 0)
+train_accuracy <- sum(train_predictions == y_train) / length(y_train)
+
+test_probabilities <- predict(logistic_model, s = best_lambda, newx = x_test, type = "response")
+test_predictions <- ifelse(test_probabilities > 0.5, 1, 0)
+test_accuracy <- sum(test_predictions == y_test) / length(y_test)
+
+cat("Training accuracy with tuned parameters:", train_accuracy, "\n")
+cat("Testing accuracy with tuned parameters:", test_accuracy, "\n")
+
+# 3. Confusion Matrix
+conf_matrix <- table(test_predictions, y_test)
+print(conf_matrix)
+# Visualize the confusion matrix
+fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
+
+
+# 4. ROC Curve
+roc_obj <- roc(y_test, test_probabilities)
+plot(roc_obj, main = "ROC Curve for Tuned Logistic Regression Model")
