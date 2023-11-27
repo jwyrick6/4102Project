@@ -1,4 +1,4 @@
-#install.packages("tidyverse")
+install.packages("tidyverse")
 library(tidyverse)
 library(dslabs)
 library(dplyr)
@@ -68,9 +68,8 @@ heart_data %>% filter(HeartDisease == 1) %>% group_by(Age, ChestPainType) %>% su
   ggtitle("Age vs. Count (disease only) for various chest pain conditions") +
   scale_fill_manual(values=c("red", "blue", "green", "black"))
 
-
 ####################################################
-# condition sex wise
+# Age Vs sex wise
 ####################################################
 options(repr.plot.width = 20, repr.plot.height = 8) 
 
@@ -84,7 +83,7 @@ heart_data %>% ggballoonplot(x = "Age", y = "Sex",
 options(repr.plot.width = 20, repr.plot.height = 8) 
 
 ####################################################
-# condition sex wise
+# Chest pain sex wise
 ####################################################
 library(ggpubr)
 library(ggplot2)
@@ -98,9 +97,8 @@ heart_data %>%
   theme(axis.text.x = element_text(angle = 90, size = 10)) +
   ggtitle("Age vs. Chest Pain Map") + labs(fill = "Sex")
 
-<<<<<<< HEAD
 ##############################
-# Heart disease by age column Pie plot
+# Pie plot for the Heart disease column 
 #############################
 library(ggplot2)
 
@@ -253,7 +251,7 @@ corrplot(cor_matrix, method = "circle")
 # Correlation plot 
 #######################
 
-#install.packages("GGally")
+install.packages("GGally")
 library(GGally)
 
 # Create a pair plot using ggpairs and display it
@@ -306,6 +304,7 @@ hc <- hclust(dist_matrix, method = "average")
 # Step 7: Plot the dendrogram
 dend <- as.dendrogram(hc)
 plot(dend)
+
 #########################################################################
 #########################################################################
 # preprocessing 
@@ -330,7 +329,7 @@ head(heart_data_numeric)
 ##########################################################################
 
 # Step 1: Preparation
-#library(dplyr)
+library(dplyr)
 
 # Convert all data to numeric
 heart_data_numeric <- heart_data %>%
@@ -456,6 +455,44 @@ cluster_counts <- table(kmeans_result$cluster)
 # Plot a pie chart
 pie(cluster_counts, main="Distribution of Data Points Among 4 Clusters", col=rainbow(4), labels=paste(names(cluster_counts), "\n", cluster_counts, " points"))
 
+#######################################################
+# comparing of heart disease with clusters 
+########################################################
+
+# Load necessary libraries
+library(dplyr)
+library(ggplot2)
+
+
+# Convert all data to numeric, except for HeartDisease which will be our target
+heart_data_numeric <- heart_data %>%
+  mutate(across(where(is.factor) & !all_of("HeartDisease"), as.numeric)) %>%
+  mutate(across(where(is.character), as.factor)) %>%
+  mutate(across(where(is.factor) & !all_of("HeartDisease"), as.numeric))
+
+# Normalize the data (excluding HeartDisease)
+scaled_data <- scale(heart_data_numeric[ , !names(heart_data_numeric) %in% c("HeartDisease")])
+
+# K-means clustering with 4 clusters
+set.seed(123)
+kmeans_result <- kmeans(scaled_data, centers = 4)
+
+# Associate each data point with its cluster assignment and HeartDisease status
+data_with_clusters <- cbind(as.data.frame(scaled_data), Cluster = kmeans_result$cluster, HeartDisease = heart_data$HeartDisease)
+
+# Group by the cluster and calculate the count of cases with heart disease in each cluster
+cluster_disease_counts <- data_with_clusters %>%
+  group_by(Cluster, HeartDisease) %>%
+  summarise(Count = n()) %>%
+  arrange(Cluster, HeartDisease)
+
+# Plot
+ggplot(cluster_disease_counts, aes(x = "", y = Count, fill = as.factor(HeartDisease))) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  facet_wrap(~Cluster) +
+  labs(fill = "Heart Disease", title = "Distribution of Heart Disease Across Clusters")
+
 #########################################################################
 #########################################################################
 # AI Classification Here
@@ -490,12 +527,14 @@ cat("Number of rows in testing data:", nrow(test_data), "\n")
 ##########################################################################
 
 # Install necessary libraries, comment out when done
-install.packages(c("randomForest", "e1071", "pROC", "caret"))
+install.packages(c("randomForest", "e1071", "pROC", "caret","lattice"))
 
 # load necessary libraries
 library(randomForest)
+library(lattice)
 library(e1071)
 library(pROC)
+library(ggplot2)
 library(caret)
 
 # Random Forest Model Training
@@ -594,7 +633,6 @@ conf_matrix <- table(test_predictions, test_data$HeartDisease)
 # Visualize the confusion matrix
 fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
 
-
 ##########################################################################
 ##########################################################################
 # Decision tree classifier 
@@ -627,7 +665,6 @@ conf_matrix <- table(test_predictions, test_data$HeartDisease)
 print(conf_matrix)
 # Visualize the confusion matrix
 fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
-
 
 # Step 4: ROC Curve
 test_probabilities <- predict(tree_model, test_data, type = "prob")[,2]  # Probabilities of class 1
@@ -685,7 +722,6 @@ print(conf_matrix)
 # Visualize the confusion matrix
 fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
 
-
 # 4. ROC Curve
 test_probabilities <- predict(best_tree_model, test_data, type = "prob")[,2]  # Probabilities of class 1
 roc_obj <- roc(test_data$HeartDisease, test_probabilities)
@@ -726,7 +762,6 @@ conf_matrix <- table(test_predictions, test_data$HeartDisease)
 print(conf_matrix)
 # Visualize the confusion matrix
 fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
-
 
 # 4. ROC Curve
 roc_obj <- roc(test_data$HeartDisease, test_probabilities)
@@ -775,7 +810,6 @@ conf_matrix <- table(test_predictions, y_test)
 print(conf_matrix)
 # Visualize the confusion matrix
 fourfoldplot(conf_matrix, color = c("#CC6666", "#99CC99"), conf.level = 0, margin = 1, main = "Confusion Matrix")
-
 
 # 4. ROC Curve
 roc_obj <- roc(y_test, test_probabilities)
