@@ -3,7 +3,7 @@ library(randomForest)
 library(ggplot2)
 
 # 1. Read the data
-heart_data <- read.csv("C:/Users/0513/Desktop/TK123816 - R -Language - Smart Health Prediction/heart.csv")
+heart_data <- read.csv("./heart.csv")
 
 # 2. Preprocess and encode categorical variables
 categorical_columns <- c("Sex", "ChestPainType", "RestingECG", "ExerciseAngina", "ST_Slope")
