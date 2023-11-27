@@ -18,5 +18,13 @@ Additionally, the project explores the potential for broader applications like t
 
 The code is written in R, and we are using the "heart.csv" dataset for predicting heatdiseases.
 
+1.Go to rstudio official website from : https://posit.co/download/rstudio-desktop/
+2.Download and Install R
+3.Download and Install Rstudio for your operating system
+4.Run Rstudio
+5.in the console copy and paste this code then press enter:
 ```R
-# instructions here when needed.
+install.packages(c("tidyverse", "dslabs", "dplyr", "caret", "lubridate", "tidytext", "RColorBrewer", "randomForest", "tictoc", "e1071", "ggpubr", "GGally", "corrplot", "gridExtra", "transformr", "rpart", "rpart.plot", "glmnet", "pROC", "shiny"))
+```
+6.Open Rshiny.r (make sure that heart.csv is in the same folder as Rshiny.r)
+7.Run the code
